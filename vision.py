@@ -8,7 +8,7 @@ import google.generativeai as genai
 
 # Load environment variables from .env
 load_dotenv()
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+genai.configure(api_key=os.getenv("AIzaSyC7pT_vr9vkQfBI2-f_yRhqcuIVb1Jc6qg"))
 
 def get_gemini_response(input_text, image, prompt):
     model = genai.GenerativeModel('gemini-pro-vision')
