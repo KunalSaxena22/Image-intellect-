@@ -1,7 +1,5 @@
 # Medical Intellect: AI-Powered Medical Image Analysis
 
-![Medical Intellect Logo](https://example.com/path/to/your/logo.png)
-
 ## Table of Contents
 - [Introduction](#introduction)
 - [Features](#features)
