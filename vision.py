@@ -90,8 +90,8 @@ with col2:
     st.info("Upload an image and enter a prompt to get started. The AI will analyze the image and provide relevant information.")
 
 # Footer for additional information or credits
-st.markdown("---")
-st.markdown("Powered by Google Generative AI")
+st.markdown("This project is intended for educational purposes and is currently in the testing phase.")
+st.markdown("Built by Kunal Saxena.")
 
 
 
