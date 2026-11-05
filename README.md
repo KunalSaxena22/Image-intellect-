@@ -1,90 +1,100 @@
-# Medical Intellect: AI-Powered Medical Image Analysis
+# Medical Intellect
 
-## Table of Contents
-- [Introduction](#introduction)
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Technologies Used](#technologies-used)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
+Medical Intellect is an educational Streamlit application that uses Google's Gemini API to explain content visible in uploaded medical images. It accepts JPG, JPEG, and PNG files and lets users ask a question about the image.
 
-## Introduction
-
-Medical Intellect is a cutting-edge AI-powered application designed to revolutionize medical image analysis. By leveraging Google's Generative AI API, specifically the Gemini model, this project aims to provide accurate and insightful analysis of various medical images, from X-rays and MRIs to medical documents and invoices.
-
-### Overview
-
-In today's fast-paced medical environment, accurate diagnosis and timely treatment are crucial. Medical Intellect stands at the forefront of innovation, offering advanced capabilities to healthcare professionals and patients alike. Our application bridges the gap between complex medical imaging data and actionable insights, enhancing the quality of patient care and medical decision-making.
-
-### Objective
-
-The primary goal of Medical Intellect is to develop an AI-powered companion for healthcare professionals and a valuable resource for patients. By democratizing access to advanced medical analysis tools, we aim to:
-
-- Enhance diagnostic accuracy
-- Aid in treatment decision-making
-- Facilitate patient education
-- Provide personalized insights based on specific needs and queries
+> **Medical safety:** This project is an educational aid, not a medical device. AI-generated explanations can be incomplete or inaccurate. Do not use the output to diagnose, prescribe, or make treatment or emergency decisions. A qualified healthcare professional must interpret medical findings.
 
 ## Features
 
-- **AI-Powered Analysis**: Utilizes Google's Gemini model for accurate image interpretation
-- **User-Friendly Interface**: Built with Streamlit for easy interaction
-- **Flexible Input**: Accepts various image formats (JPG, JPEG, PNG)
-- **Customizable Prompts**: Users can input specific questions or analysis requirements
-- **Real-time Processing**: Quick generation of detailed analysis and insights
+- Upload and preview JPG, JPEG, and PNG images.
+- Ask a question about the uploaded image.
+- Generate a plain-language explanation with the Gemini API.
+- Configure the Gemini API key through an environment file.
+- Choose a Gemini model using the optional `GEMINI_MODEL` setting.
+
+## Requirements
+
+- Python 3.10 or newer.
+- A Gemini API key.
+- The Python packages listed in `requirements.txt`.
 
 ## Installation
 
-1. Clone the repository:
-git clone https://github.com/yourusername/medical-intellect.git
-Copy
-2. Navigate to the project directory:
-cd medical-intellect
-Copy
-3. Install required dependencies:
-pip install -r requirements.txt
-Copy
-4. Set up your Google API key in a `.env` file:
-GOOGLE_API_KEY=your_api_key_here
-Copy
-## Usage
+Clone this repository:
 
-1. Run the Streamlit app:
-streamlit run app.py
-Copy
-2. Open your web browser and go to `http://localhost:8501`
+~~~bash
+git clone https://github.com/KunalSaxena22/Image-intellect-.git
+cd Image-intellect-
+~~~
 
-3. Enter your prompt in the text input field
+Create and activate a virtual environment.
 
-4. Upload a medical image for analysis
+**Windows PowerShell:**
 
-5. Click "Tell me about the image" to get the AI-generated response
+~~~powershell
+py -3.10 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+~~~
 
-## Technologies Used
+**macOS / Linux:**
 
-- Python
-- Streamlit
-- Google Generative AI API (Gemini model)
-- PIL (Python Imaging Library)
-- dotenv
+~~~bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+~~~
+
+Create your local environment file:
+
+~~~bash
+cp .env.example .env
+~~~
+
+On Windows, use `Copy-Item .env.example .env` in PowerShell instead. Open `.env` and set your key:
+
+~~~dotenv
+GOOGLE_API_KEY=your_gemini_api_key
+# Optional; defaults to gemini-3.8-flash
+GEMINI_MODEL=gemini-3.8-flash
+~~~
+
+Do not commit your real `.env` file or share your API key.
+
+## Run the app
+
+Run the application from the repository root:
+
+~~~bash
+streamlit run vision.py
+~~~
+
+Streamlit prints a local URL (normally `http://localhost:8501`) that you can open in your browser.
+
+## How to use
+
+1. Start the Streamlit application.
+2. Upload a JPG, JPEG, or PNG image.
+3. Enter a specific question about the visible content.
+4. Select **Explain this image**.
+5. Review the generated explanation and confirm any medical information with a qualified healthcare professional.
+
+Only upload images or documents you are authorized to share. Avoid including unnecessary patient-identifying information.
+
+## Technology
+
+- Python and Streamlit
+- Google Gen AI Python SDK (`google-genai`)
+- Gemini multimodal models
+- Pillow
+- python-dotenv
 
 ## Contributing
 
-We welcome contributions to Medical Intellect! Please feel free to submit pull requests, report bugs, or suggest new features through our GitHub issues page.
+Bug reports and tested pull requests are welcome. Include clear reproduction steps and avoid sharing API keys, private patient information, or identifiable medical images in issues and pull requests.
 
-## License
+## Maintainer
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contact
-
-Project maintained by Kunal Saxena.
-
-For any queries or support, please open an issue on our GitHub repository.
-
----
-
-**Note**: This project is intended for educational purposes and is currently in the testing phase.
-This README provides a comprehensive overview of your Medical Intellect project, including its purpose, features, installation instructions, and usage guidelines. It also includes sections for contributing, licensing, and contact information. You can further customize this README by adding your project's logo, updating the contact information, and including any additional sections that you feel are relevant to your project.
+Kunal Saxena — [@KunalSaxena22](https://github.com/KunalSaxena22)
