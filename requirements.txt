@@ -1,9 +1,5 @@
+# Runtime dependencies used by vision.py
 streamlit
-pdf2image
 google-genai
-PyPDF2
-faiss-cpu
-langchain
-langchain_google_genai
 python-dotenv
 Pillow
