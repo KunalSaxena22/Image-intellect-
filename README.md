@@ -27,16 +27,17 @@ git clone https://github.com/KunalSaxena22/Image-intellect-.git
 cd Image-intellect-
 ~~~
 
-Create and activate a virtual environment.
+Create a virtual environment and install the runtime dependencies.
 
 **Windows PowerShell:**
 
 ~~~powershell
 py -3.10 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ~~~
+
+These commands call the virtual environment's Python executable directly, so PowerShell activation is not required.
 
 **macOS / Linux:**
 
@@ -68,6 +69,10 @@ Do not commit your real `.env` file or share your API key.
 Run the application from the repository root:
 
 ~~~bash
+# Windows PowerShell
+.\.venv\Scripts\python.exe -m streamlit run vision.py
+
+# macOS / Linux (after activating .venv)
 streamlit run vision.py
 ~~~
 
