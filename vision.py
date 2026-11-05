@@ -1,182 +1,130 @@
-# image intellect
+"""Streamlit application for educational medical-image explanations."""
 
-from dotenv import load_dotenv
-import streamlit as st
 import os
+
+import streamlit as st
+from dotenv import load_dotenv
+from google import genai
+from google.genai import types
 from PIL import Image
-import google.generativeai as genai
 
-# Load environment variables from .env
 load_dotenv()
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-def get_gemini_response(input_text, image, prompt):
-    model = genai.GenerativeModel('gemini-pro-vision')
-    response = model.generate_content([input_text, image[0], prompt])
-    return response.text
+DEFAULT_MODEL = "gemini-3.8-flash"
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png"}
 
-def input_image_setup(uploaded_file):
-    if uploaded_file is not None:
-        bytes_data = uploaded_file.getvalue()
-        image_parts = [
-            {
-                "mime_type": uploaded_file.type,
-                "data": bytes_data
-            }
-        ]
-        return image_parts
-    else:
-        raise FileNotFoundError("No file uploaded")
-
-# Initialize our Streamlit app
-st.set_page_config(page_title="Gemini Image Demo", layout="wide")
-
-# Sidebar with an "About" section
-with st.sidebar:
-    st.title("About")
-    st.info("""
-        **Medical Intellect** is an AI-powered application for medical image analysis.
-        
-        **How it works:**
-        1. **Input Prompt**: Enter a textual prompt that describes what you want the AI to do.
-        2. **Upload Image**: Upload a medical image (e.g., x-ray, MRI, medical document).
-        3. **Get Response**: Click the "Tell me about the image" button to get a detailed analysis based on the input prompt and image.
-        
-        **Powered by Google Generative AI:**
-        This application utilizes the Gemini model from Google's Generative AI API to analyze the input image and provide accurate responses based on the prompt.
-    """)
-
-# Page title and header
-st.title("Medical Intellect")
-st.subheader("AI-powered Medical Image Analysis")
-
-# Input prompt and image uploader
-input_text = st.text_input("Enter your prompt:", key="input")
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"], help="Upload a medical image for analysis")
-
-# Display uploaded image
-if uploaded_file is not None:
-    image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Image", use_column_width=True)
-
-# Define input prompt
-input_prompt = """
-     you are an expert in medical field 
-     you will recieve input images of medical as invoices &
-     you will have to answer questions based on the input image with accuracy
+SYSTEM_PROMPT = """
+You help users understand the visible contents of medical images and documents
+for educational purposes. Answer the user's question in clear, cautious language.
+Do not diagnose a condition, prescribe medication, or recommend treatment.
+Distinguish visible observations from uncertainty, and explain when image quality
+or missing context limits the answer. Remind users that a qualified healthcare
+professional must interpret medical findings and make care decisions.
 """
 
-# Create a two-column layout for better alignment
-col1, col2 = st.columns([2, 1])
 
-with col1:
-    if st.button("Tell me about the image", key="submit"):
-        if uploaded_file is not None and input_text.strip():
-            try:
-                # Display progress message
-                with st.spinner("Generating response..."):
-                    image_data = input_image_setup(uploaded_file)
-                    response = get_gemini_response(input_text, image_data, input_prompt)
-                
-                # Display the response
-                st.success("The Response is:")
-                st.write(response)
-            except Exception as e:
-                st.error(f"An error occurred: {str(e)}")
-        else:
-            st.error("Please provide both an input prompt and an image.")
+def input_image_setup(uploaded_file):
+    """Convert a Streamlit upload into a Gemini image part."""
+    if uploaded_file is None:
+        raise ValueError("Please upload a JPG, JPEG, or PNG image.")
 
-with col2:
-    st.info("Upload an image and enter a prompt to get started. The AI will analyze the image and provide relevant information.")
+    mime_type = getattr(uploaded_file, "type", None)
+    if mime_type not in ALLOWED_IMAGE_TYPES:
+        raise ValueError("Unsupported image type. Please upload a JPG or PNG file.")
 
-# Footer for additional information or credits
-st.markdown("This project is intended for educational purposes and is currently in the testing phase.")
-st.markdown("Built by Kunal Saxena.")
+    image_bytes = uploaded_file.getvalue()
+    if not image_bytes:
+        raise ValueError("The uploaded image is empty.")
+
+    return types.Part.from_bytes(data=image_bytes, mime_type=mime_type)
 
 
+def get_gemini_response(input_text, image_part, prompt=SYSTEM_PROMPT):
+    """Generate an educational explanation using the Gemini Developer API."""
+    api_key = os.getenv("GOOGLE_API_KEY", "").strip()
+    if not api_key:
+        raise RuntimeError(
+            "GOOGLE_API_KEY is not set. Add your Gemini API key to the .env file."
+        )
+
+    model_name = os.getenv("GEMINI_MODEL", DEFAULT_MODEL).strip() or DEFAULT_MODEL
+    client = genai.Client(api_key=api_key)
+    response = client.models.generate_content(
+        model=model_name,
+        contents=[prompt, input_text, image_part],
+    )
+
+    response_text = getattr(response, "text", None)
+    if not response_text:
+        raise RuntimeError(
+            "Gemini returned no text. Try another image or a more specific question."
+        )
+
+    return response_text
 
 
+# Streamlit page
+st.set_page_config(page_title="Medical Intellect", layout="wide")
 
+with st.sidebar:
+    st.title("About")
+    st.info(
+        "Medical Intellect explains content in uploaded medical images for "
+        "educational purposes. It is not a diagnostic tool and cannot replace "
+        "a qualified healthcare professional."
+    )
+    st.caption(
+        "Only upload images or documents you are authorized to share. "
+        "Avoid including unnecessary personal or patient-identifying information."
+    )
 
+st.title("Medical Intellect")
+st.subheader("AI-assisted medical image explanations")
+st.warning(
+    "For education only — do not use this application to diagnose, treat, or "
+    "make urgent healthcare decisions. AI-generated responses can be inaccurate."
+)
 
+input_text = st.text_input(
+    "What would you like to understand about the image?",
+    key="input",
+    placeholder="For example: Explain the visible labels in this report.",
+)
+uploaded_file = st.file_uploader(
+    "Upload a medical image",
+    type=["jpg", "jpeg", "png"],
+    help="Supported formats: JPG, JPEG, and PNG.",
+)
 
+if uploaded_file is not None:
+    try:
+        preview = Image.open(uploaded_file)
+        preview.verify()
+        uploaded_file.seek(0)
+        st.image(
+            Image.open(uploaded_file),
+            caption="Uploaded image",
+            use_container_width=True,
+        )
+        uploaded_file.seek(0)
+    except Exception:
+        st.error("The uploaded file could not be read as a valid image.")
 
+if st.button("Explain this image", key="submit"):
+    if uploaded_file is None or not input_text.strip():
+        st.error("Please upload an image and enter a question.")
+    else:
+        try:
+            image_part = input_image_setup(uploaded_file)
+            with st.spinner("Generating an explanation..."):
+                response = get_gemini_response(input_text.strip(), image_part)
+            st.subheader("Educational explanation")
+            st.write(response)
+        except Exception as error:
+            st.error(f"Unable to generate an explanation: {error}")
 
-# # # image intellect
-
-# from dotenv import load_dotenv
-
-# load_dotenv()  # take environment variables from .env.
-
-# import streamlit as st
-# import os
-# import pathlib
-# import textwrap
-# from PIL import Image
-
-
-# import google.generativeai as genai
-# # 
-
-# os.getenv("GOOGLE_API_KEY")
-# genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-
-# ## Function to load OpenAI model and get respones
-
-# def get_gemini_response(input,image,prompt):
-#     model = genai.GenerativeModel('gemini-pro-vision')
-#     response = model.generate_content([input,image[0],prompt])
-#     return response.text
-    
-
-# def input_image_setup(uploaded_file):
-#     # Check if a file has been uploaded
-#     if uploaded_file is not None:
-#         # Read the file into bytes
-#         bytes_data = uploaded_file.getvalue()
-
-#         image_parts = [
-#             {
-#                 "mime_type": uploaded_file.type,  # Get the mime type of the uploaded file
-#                 "data": bytes_data
-#             }
-#         ]
-#         return image_parts
-#     else:
-#         raise FileNotFoundError("No file uploaded")
-
-
-# ##initialize our streamlit app
-
-# st.set_page_config(page_title="Gemini Image Demo")
-
-# st.header("Medical Intellect")
-# input=st.text_input("Input Prompt: ",key="input")
-# uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
-# image=""   
-# if uploaded_file is not None:
-#     image = Image.open(uploaded_file)
-    
-#     st.image(image, caption="Uploaded Image.", use_column_width=True)
-
-
-# submit=st.button("Tell me about the image")
-
-# input_prompt = """
-#             #    You are an expert in understanding invoices.
-#             #    You will receive input images as invoices &
-#             #    you will have to answer questions based on the input image
-                 
-            
-#             you are an expert in medical field 
-#             you will recieve input images of medical as invoices &
-#             you will have to answer questions based on the input image with accuracy
-#                """
-
-# ## If ask button is clicked
-
-# if submit:
-#     image_data = input_image_setup(uploaded_file)
-#     response=get_gemini_response(input_prompt,image_data,input)
-#     st.subheader("The Response is")
-#     st.write(response)
+st.info(
+    "Upload an image and ask a question to get a plain-language explanation. "
+    "Always confirm medical findings with a qualified healthcare professional."
+)
+st.caption("Built by Kunal Saxena · Educational project")
