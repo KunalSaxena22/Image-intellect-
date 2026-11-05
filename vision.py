@@ -51,7 +51,8 @@ def get_gemini_response(input_text, image_part, prompt=SYSTEM_PROMPT):
     client = genai.Client(api_key=api_key)
     response = client.models.generate_content(
         model=model_name,
-        contents=[prompt, input_text, image_part],
+        contents=[input_text, image_part],
+        config=types.GenerateContentConfig(system_instruction=prompt),
     )
 
     response_text = getattr(response, "text", None)
